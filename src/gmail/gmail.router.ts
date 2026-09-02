@@ -16,7 +16,7 @@ gmailRouter.get("/connect", requireAuth, (req, res) => {
     state,
   });
 
-  res.redirect(url);
+  res.json({ url });
 });
 
 gmailRouter.get("/callback", async (req, res) => {
