@@ -1,18 +1,18 @@
 # Jobtrace backend
 
-Backend для трекера вакансий: хранит отклики (company, role, status, dates),
-привязанные к ним письма из Gmail и пользователей с email+password
-авторизацией. Отдельный сервис, фронтенд (React + Vite) живёт в другом
-репозитории.
+Backend for a job application tracker: stores applications (company, role,
+status, dates), Gmail messages linked to them, and users with email+password
+auth. Standalone service — the frontend (React + Vite) lives in a separate
+repo.
 
-Стек: Node.js + TypeScript, Express, Prisma, PostgreSQL, zod, JWT + bcrypt.
+Stack: Node.js + TypeScript, Express, Prisma, PostgreSQL, zod, JWT + bcrypt.
 
-## Требования
+## Requirements
 
 - Node.js 20+
-- Docker (для локального Postgres) или своя PostgreSQL-инстанция
+- Docker (for local Postgres) or your own PostgreSQL instance
 
-## Запуск
+## Setup
 
 ```bash
 git clone <repo-url>
@@ -20,7 +20,7 @@ cd job-application-tracker-backend
 cp .env.example .env
 ```
 
-Заполнить `.env` (см. ниже про `JWT_SECRET` и Google-креды).
+Fill in `.env` (see below for `JWT_SECRET` and Google credentials).
 
 ```bash
 docker run --name jobtrace-db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=jobtrace -p 5432:5432 -d postgres:16
@@ -30,41 +30,41 @@ npm run prisma:migrate
 npm run dev
 ```
 
-Сервер поднимается на `http://localhost:4000` (см. `PORT` в `.env`).
+The server starts on `http://localhost:4000` (see `PORT` in `.env`).
 
-## Эндпоинты
+## Endpoints
 
 **Auth**
-- `POST /auth/register` — регистрация (email + password)
-- `POST /auth/login` — логин, возвращает JWT
-- `GET /auth/me` — данные текущего пользователя (нужен токен)
+- `POST /auth/register` — register (email + password)
+- `POST /auth/login` — login, returns a JWT
+- `GET /auth/me` — current user's data (requires token)
 
 **Jobs**
-- `GET /jobs` — список заявок текущего пользователя
-- `POST /jobs` — создать заявку
-- `PATCH /jobs/:id` — обновить заявку (только владелец)
-- `DELETE /jobs/:id` — удалить заявку (только владелец)
+- `GET /jobs` — list the current user's applications
+- `POST /jobs` — create an application
+- `PATCH /jobs/:id` — update an application (owner only)
+- `DELETE /jobs/:id` — delete an application (owner only)
 
 **Responses**
-- `GET /jobs/:jobId/responses` — письма по заявке
-- `POST /jobs/:jobId/responses` — добавить письмо к заявке
-- `DELETE /responses/:id` — удалить письмо (только владелец заявки)
+- `GET /jobs/:jobId/responses` — emails linked to an application
+- `POST /jobs/:jobId/responses` — add an email to an application
+- `DELETE /responses/:id` — delete an email (application owner only)
 
 **Gmail**
-- `GET /gmail/connect` — вернуть ссылку на Google OAuth consent (нужен токен)
-- `GET /gmail/callback` — callback для Google, обменивает code на токены
-- `GET /gmail/token` — статус подключения Gmail-аккаунта
+- `GET /gmail/connect` — returns the Google OAuth consent URL (requires token)
+- `GET /gmail/callback` — Google's callback, exchanges the code for tokens
+- `GET /gmail/token` — Gmail connection status
 
-Все эндпоинты, кроме `/auth/register`, `/auth/login` и `/gmail/callback`,
-требуют заголовок `Authorization: Bearer <token>`.
+All endpoints except `/auth/register`, `/auth/login`, and `/gmail/callback`
+require an `Authorization: Bearer <token>` header.
 
-## Настройка Gmail OAuth (Google Cloud Console)
+## Setting up Gmail OAuth (Google Cloud Console)
 
-1. Создать проект на console.cloud.google.com
-2. Включить Gmail API (APIs & Services → Library)
-3. Настроить OAuth consent screen (External, добавить себя в test users,
-   пока приложение не верифицировано)
-4. Создать OAuth 2.0 Client ID (Web application), redirect URI —
+1. Create a project at console.cloud.google.com
+2. Enable the Gmail API (APIs & Services → Library)
+3. Configure the OAuth consent screen (External, add yourself as a test
+   user while the app is unverified)
+4. Create an OAuth 2.0 Client ID (Web application), redirect URI —
    `http://localhost:4000/gmail/callback`
-5. Вписать `Client ID` и `Client secret` в `.env`
+5. Put the `Client ID` and `Client secret` into `.env`
    (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`)
