@@ -4,6 +4,7 @@ import { prisma } from "../prisma";
 import { registerSchema, loginSchema } from "./auth.schema";
 import { hashPassword, comparePassword } from "./password";
 import { signToken } from "./jwt";
+import { requireAuth } from "../middleware/auth.middleware";
 
 export const authRouter = Router();
 
@@ -50,4 +51,12 @@ authRouter.post("/login", async (req, res) => {
 
   const token = signToken(user.id);
   res.json({ token });
+});
+
+authRouter.get("/me", requireAuth, async (req, res) => {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: req.userId },
+    select: { id: true, email: true, createdAt: true },
+  });
+  res.json(user);
 });
