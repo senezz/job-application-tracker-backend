@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "prisma migrate deploy && node dist/server.js",
     "prisma:migrate": "prisma migrate dev"
   },
   "keywords": [],
@@ -20,6 +20,7 @@
     "express": "^5.2.1",
     "googleapis": "^178.0.0",
     "jsonwebtoken": "^9.0.3",
+    "prisma": "^6.19.3",
     "zod": "^4.5.4"
   },
   "devDependencies": {
@@ -28,7 +29,6 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.4.1",
-    "prisma": "^6.19.3",
     "tsx": "^4.23.13",
     "typescript": "^5.9.3"
   }
