@@ -65,7 +65,8 @@ gmailRouter.get("/callback", async (req, res) => {
     },
   });
 
-  res.redirect("http://localhost:5173/settings?gmail=connected");
+  const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost:5173";
+  res.redirect(`${frontendUrl}/settings?gmail=connected`);
 });
 
 gmailRouter.get("/token", requireAuth, async (req, res) => {
