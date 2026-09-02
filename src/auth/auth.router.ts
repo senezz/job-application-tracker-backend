@@ -1,5 +1,4 @@
 import { Router } from "express";
-import { Prisma } from "@prisma/client";
 import { prisma } from "../prisma";
 import { registerSchema, loginSchema } from "./auth.schema";
 import { hashPassword, comparePassword } from "./password";
@@ -17,19 +16,12 @@ authRouter.post("/register", async (req, res) => {
   const { email, password } = parsed.data;
   const passwordHash = await hashPassword(password);
 
-  try {
-    const user = await prisma.user.create({
-      data: { email, passwordHash },
-    });
+  const user = await prisma.user.create({
+    data: { email, passwordHash },
+  });
 
-    const token = signToken(user.id);
-    res.status(201).json({ token });
-  } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      return res.status(409).json({ message: "Email already registered" });
-    }
-    throw err;
-  }
+  const token = signToken(user.id);
+  res.status(201).json({ token });
 });
 
 authRouter.post("/login", async (req, res) => {
