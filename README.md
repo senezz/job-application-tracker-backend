@@ -68,3 +68,22 @@ require an `Authorization: Bearer <token>` header.
    `http://localhost:4000/gmail/callback`
 5. Put the `Client ID` and `Client secret` into `.env`
    (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`)
+
+## Deployment
+
+Database: Neon (Postgres). Already set up — copy its connection string
+into `DATABASE_URL` on Render.
+
+Render (Web Service):
+- Build command: `npm install && npm run build`
+- Start command: `npm start` (runs `prisma migrate deploy` before starting
+  the server, so migrations apply automatically on every deploy)
+- Environment variables: `DATABASE_URL` (from Neon), `JWT_SECRET`,
+  `FRONTEND_URL` (the deployed frontend's URL), `GOOGLE_CLIENT_ID`,
+  `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` (Render service URL +
+  `/gmail/callback`). `PORT` is provided by Render.
+
+After the first deploy, add a new redirect URI in Google Cloud Console
+(OAuth 2.0 Client ID → Authorized redirect URIs) pointing at the real
+Render domain, e.g. `https://<your-service>.onrender.com/gmail/callback`
+— the `localhost` one only works for local development.
