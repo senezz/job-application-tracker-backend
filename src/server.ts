@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { authRouter } from "./auth/auth.router";
 import { jobsRouter } from "./jobs/jobs.router";
+import { jobResponsesRouter, responseRouter } from "./responses/responses.router";
 
 const app = express();
 
@@ -15,6 +16,8 @@ app.get("/health", (_req, res) => {
 
 app.use("/auth", authRouter);
 app.use("/jobs", jobsRouter);
+app.use("/jobs", jobResponsesRouter);
+app.use("/responses", responseRouter);
 
 const port = process.env.PORT ?? 4000;
 app.listen(port, () => {
