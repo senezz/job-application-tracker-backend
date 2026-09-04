@@ -66,7 +66,7 @@ gmailRouter.get("/callback", async (req, res) => {
   });
 
   const frontendUrl = process.env.FRONTEND_URL ?? "http://localhost:5173";
-  res.redirect(`${frontendUrl}/settings?gmail=connected`);
+  res.redirect(`${frontendUrl}/your-data?gmail=connected`);
 });
 
 gmailRouter.get("/token", requireAuth, async (req, res) => {
@@ -78,15 +78,22 @@ gmailRouter.get("/token", requireAuth, async (req, res) => {
   const oauthClient = createOAuthClient();
   oauthClient.setCredentials({ refresh_token: account.refreshToken });
 
+  let accessToken: string | null | undefined;
   try {
-    await oauthClient.getAccessToken();
+    ({ token: accessToken } = await oauthClient.getAccessToken());
   } catch (err: any) {
     if (err?.response?.data?.error === "invalid_grant") {
       await prisma.gmailAccount.delete({ where: { userId: req.userId } });
       return res.status(401).json({ message: "token_revoked" });
     }
-    throw err;
+    console.error("Failed to refresh Gmail access token", err);
+    return res.status(502).json({ message: "Failed to refresh Gmail access token" });
   }
 
-  res.json({ connected: true, scope: account.scope, connectedAt: account.connectedAt });
+  res.json({
+    connected: true,
+    accessToken,
+    scope: account.scope,
+    connectedAt: account.connectedAt,
+  });
 });
