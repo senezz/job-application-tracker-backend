@@ -55,8 +55,24 @@ The server starts on `http://localhost:4000` (see `PORT` in `.env`).
 - `GET /gmail/callback` — Google's callback, exchanges the code for tokens
 - `GET /gmail/token` — Gmail connection status
 
-All endpoints except `/auth/register`, `/auth/login`, and `/gmail/callback`
-require an `Authorization: Bearer <token>` header.
+**Profile**
+- `GET /profile` — current user's profile (auto-created on first access)
+- `PUT /profile` — update `fullName`/`phone`/`links`
+- `POST /profile/cv` — upload a CV (multipart, field `cv`, max 5MB,
+  pdf/doc/docx only) — stored in Cloudflare R2
+- `GET /profile/cv` — get a presigned download URL for the CV (valid 5
+  minutes), 404 if none uploaded
+- `DELETE /profile/cv` — delete the uploaded CV
+
+**Password reset**
+- `POST /auth/forgot-password` — request a reset email (always returns 200
+  with the same message, whether or not the email exists)
+- `POST /auth/reset-password` — reset the password given `{ token,
+  newPassword }`; 400 if the token is invalid or expired
+
+All endpoints except `/auth/register`, `/auth/login`, `/auth/forgot-password`,
+`/auth/reset-password`, and `/gmail/callback` require an
+`Authorization: Bearer <token>` header.
 
 ## Setting up Gmail OAuth (Google Cloud Console)
 
@@ -81,9 +97,27 @@ Render (Web Service):
 - Environment variables: `DATABASE_URL` (from Neon), `JWT_SECRET`,
   `FRONTEND_URL` (the deployed frontend's URL), `GOOGLE_CLIENT_ID`,
   `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI` (Render service URL +
-  `/gmail/callback`). `PORT` is provided by Render.
+  `/gmail/callback`), `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`,
+  `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `RESEND_API_KEY`,
+  `RESEND_FROM_EMAIL`. `PORT` is provided by Render.
 
 After the first deploy, add a new redirect URI in Google Cloud Console
 (OAuth 2.0 Client ID → Authorized redirect URIs) pointing at the real
 Render domain, e.g. `https://<your-service>.onrender.com/gmail/callback`
 — the `localhost` one only works for local development.
+
+## Setting up Cloudflare R2 (CV storage)
+
+1. Create an R2 bucket in the Cloudflare dashboard
+2. Create an R2 API token (Account → R2 → Manage API Tokens) with
+   read/write access to the bucket
+3. Put the account ID, access key ID, and secret access key into `.env`
+   (`R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`) and the
+   bucket name into `R2_BUCKET_NAME`
+
+## Setting up Resend (password reset emails)
+
+1. Create an account at resend.com and verify a sending domain (or use
+   their `onboarding@resend.dev` test address for local development)
+2. Create an API key and put it into `.env` (`RESEND_API_KEY`)
+3. Set `RESEND_FROM_EMAIL` to the verified sender address
