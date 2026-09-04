@@ -5,6 +5,7 @@ import { authRouter } from "./auth/auth.router";
 import { jobsRouter } from "./jobs/jobs.router";
 import { jobResponsesRouter, responseRouter } from "./responses/responses.router";
 import { gmailRouter } from "./gmail/gmail.router";
+import { profileRouter } from "./profile/profile.router";
 import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
@@ -22,6 +23,7 @@ app.use("/jobs", jobsRouter);
 app.use("/jobs", jobResponsesRouter);
 app.use("/responses", responseRouter);
 app.use("/gmail", gmailRouter);
+app.use("/profile", profileRouter);
 
 app.use(errorHandler);
 
