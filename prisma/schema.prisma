@@ -23,6 +23,8 @@ model User {
 
   applications Application[]
   gmailAccount GmailAccount?
+  profile      UserProfile?
+  resetTokens  PasswordResetToken[]
 
   @@map("users")
 }
@@ -74,4 +76,35 @@ model Response {
 
   @@index([applicationId])
   @@map("responses")
+}
+
+// Профиль пользователя (имя, телефон, ссылки) + метаданные CV.
+// Сам файл CV лежит в Cloudflare R2, здесь храним только ключ и имя файла.
+model UserProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique @map("user_id")
+  fullName  String?  @map("full_name")
+  phone     String?
+  links     String[] @default([])
+  cvKey     String?  @map("cv_key")
+  cvName    String?  @map("cv_name")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profiles")
+}
+
+// Одноразовые токены для сброса пароля — короткий TTL, удаляются после использования.
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("password_reset_tokens")
 }
